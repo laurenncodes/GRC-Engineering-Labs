@@ -1,0 +1,33 @@
+# This is an example job to be added to your .gitlab-ci.yml file.
+# It runs after the security scan stages (e.g., sast, dast) and sends the results to AWS Security Hub.
+
+send_to_securityhub:
+  stage: security_scan # Should run in the same stage or after your security scanning jobs
+  image: python:3.11-slim
+  before_script:
+    # Install required dependencies
+    - pip install boto3
+    # Configure AWS credentials from GitLab CI/CD variables
+    # These variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, AWS_ACCOUNT_ID) 
+    # should be configured in your GitLab project's CI/CD settings.
+    - export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}"
+    - export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
+    - export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION}"
+    - export AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID}"
+  script:
+    - echo "Transforming GitLab security findings to AWS Security Hub format..."
+    # Assumes gl-sast-report.json and gl-dast-report.json are available as artifacts
+    # from previous jobs. You may need to create dummy files for testing.
+    - touch gl-sast-report.json gl-dast-report.json
+    - python gitlab_to_asff.py
+  dependencies:
+    - sast
+    - dast
+  # Allow the pipeline to continue even if the Security Hub import fails
+  allow_failure: true
+  # Only run on key branches to avoid overwhelming Security Hub with findings from feature branches
+  only:
+    - main
+    - master
+    - staging
+    - production

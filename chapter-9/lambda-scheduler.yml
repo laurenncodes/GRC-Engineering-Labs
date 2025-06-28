@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Schedules the Weekly Audit Report Lambda function to run every Friday.
+
+Parameters:
+  AssessmentId:
+    Type: String
+    Description: The AWS Audit Manager Assessment ID.
+  ReportS3Bucket:
+    Type: String
+    Description: The S3 bucket where audit reports will be stored.
+  ReportRecipients:
+    Type: CommaDelimitedList
+    Description: A comma-separated list of email addresses to receive the report.
+  SenderEmail:
+    Type: String
+    Description: The verified SES email address to send reports from.
+
+Resources:
+  WeeklyAuditReportFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: WeeklyAuditReportGenerator
+      CodeUri: . # Assumes the Lambda code is in the same directory
+      Handler: weekly_audit_report.lambda_handler
+      Runtime: python3.11
+      Timeout: 900 # 15 minutes, to handle large assessments
+      MemorySize: 1024
+      Policies:
+        - Statement:
+          - Effect: Allow
+            Action:
+              - auditmanager:GetAssessment
+              - auditmanager:GetEvidenceFoldersByAssessmentControl
+              - auditmanager:GetEvidenceByEvidenceFolder
+            Resource: !Sub "arn:aws:auditmanager:${AWS::Region}:${AWS::AccountId}:assessment/${AssessmentId}"
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+            Resource: !Sub "arn:aws:s3:::${ReportS3Bucket}/*"
+          - Effect: Allow
+            Action:
+              - ses:SendEmail
+            Resource: "*" # SES SendEmail requires a wildcard resource
+      Environment:
+        Variables:
+          ASSESSMENT_ID: !Ref AssessmentId
+          S3_BUCKET: !Ref ReportS3Bucket
+          REPORT_RECIPIENTS: !Join [",", !Ref ReportRecipients]
+          SENDER_EMAIL: !Ref SenderEmail
+      Events:
+        WeeklySchedule:
+          Type: Schedule
+          Properties:
+            Name: WeeklyAuditReportSchedule
+            Description: "Triggers the weekly audit report Lambda every Friday at 7 AM UTC"
+            Schedule: "cron(0 7 ? * FRI *)" # Every Friday at 7:00 AM UTC
+            Enabled: true
+
+Outputs:
+  FunctionName:
+    Description: "The name of the weekly audit report Lambda function"
+    Value: !Ref WeeklyAuditReportFunction
+  FunctionArn:
+    Description: "The ARN of the weekly audit report Lambda function"
+    Value: !GetAtt WeeklyAuditReportFunction.Arn

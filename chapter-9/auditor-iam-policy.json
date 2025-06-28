@@ -1,0 +1,41 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AuditManagerReadOnlyAccess",
+            "Effect": "Allow",
+            "Action": [
+                "auditmanager:GetAssessment",
+                "auditmanager:GetAssessmentFramework", 
+                "auditmanager:GetControl",
+                "auditmanager:GetEvidence",
+                "auditmanager:GetEvidenceByEvidenceFolder",
+                "auditmanager:GetEvidenceFoldersByAssessment",
+                "auditmanager:GetEvidenceFoldersByAssessmentControl",
+                "auditmanager:ListAssessments",
+                "auditmanager:ListAssessmentFrameworks"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "BasicConsoleAccess",
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetRole",
+                "sts:GetCallerIdentity"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "DenyAllWriteOperations", 
+            "Effect": "Deny",
+            "Action": [
+                "auditmanager:Create*",
+                "auditmanager:Update*", 
+                "auditmanager:Delete*",
+                "auditmanager:Put*"
+            ],
+            "Resource": "*"
+        }
+    ]
+}

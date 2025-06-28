@@ -1,0 +1,21 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "SecurityHubImportFindings",
+            "Effect": "Allow",
+            "Action": [
+                "securityhub:BatchImportFindings"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "GetCallerIdentityForValidation",
+            "Effect": "Allow",
+            "Action": [
+                "sts:GetCallerIdentity"
+            ],
+            "Resource": "*"
+        }
+    ]
+}

@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Creates a read-only IAM role for external auditors to access AWS Audit Manager.
+
+Parameters:
+  AuditorAccountId:
+    Type: String
+    Description: The AWS Account ID of the auditor who will assume this role.
+
+Resources:
+  AuditorReadOnlyPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: AuditorReadOnlyAccessPolicy
+      Description: "Grants read-only access to AWS Audit Manager for auditors."
+      PolicyDocument:
+        Fn::Transform:
+          Name: 'AWS::Include'
+          Parameters:
+            Location: './auditor-iam-policy.json'
+
+  AuditorReadOnlyRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: AuditorReadOnlyRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AuditorAccountId}:root"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Ref AuditorReadOnlyPolicy
+      Description: "Role for auditors to securely access Audit Manager evidence."
+
+Outputs:
+  RoleArn:
+    Description: "The ARN of the created auditor role."
+    Value: !GetAtt AuditorReadOnlyRole.Arn

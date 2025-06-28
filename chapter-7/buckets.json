@@ -1,0 +1,29 @@
+[
+  {
+    "Name": "my-encrypted-grc-bucket",
+    "ServerSideEncryptionConfiguration": {
+      "Rules": [
+        {
+          "ApplyServerSideEncryptionByDefault": {
+            "SSEAlgorithm": "AES256"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "Name": "my-unencrypted-log-bucket"
+  },
+  {
+    "Name": "another-secure-bucket",
+    "ServerSideEncryptionConfiguration": {
+      "Rules": [
+        {
+          "ApplyServerSideEncryptionByDefault": {
+            "SSEAlgorithm": "AES256"
+          }
+        }
+      ]
+    }
+  }
+]
