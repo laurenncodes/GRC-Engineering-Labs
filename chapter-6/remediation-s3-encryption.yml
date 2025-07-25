@@ -17,17 +17,23 @@ Resources:
     Properties:
       ConfigRuleName: !Ref S3EncryptionConfigRule
       TargetType: SSM_DOCUMENT
-      TargetId: AWSConfigRemediation-EnableS3BucketEncryption
+      TargetId: AWS-EnableS3BucketEncryption
       TargetVersion: '1'
       Parameters:
         AutomationAssumeRole:
-          StaticValue: !GetAtt RemediationRole.Arn
+          StaticValue:
+            Values:
+              - !GetAtt RemediationRole.Arn
         BucketName:
-          ResourceValue: RESOURCE_ID
+          ResourceValue:
+            Value: RESOURCE_ID
         SSEAlgorithm:
-          StaticValue: AES256
+          StaticValue:
+            Values:
+              - AES256
       Automatic: true
       MaximumAutomaticAttempts: 3
+      RetryAttemptSeconds: 60
 
   RemediationRole:
     Type: AWS::IAM::Role

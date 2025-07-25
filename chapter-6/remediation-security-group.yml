@@ -17,18 +17,19 @@ Resources:
     Properties:
       ConfigRuleName: !Ref SecurityGroupConfigRule
       TargetType: SSM_DOCUMENT
-      TargetId: AWSConfigRemediation-RemoveUnrestrictedSourceInSecurityGroup
+      TargetId: AWSConfigRemediation-RemoveUnrestrictedSourceIngressRules
       TargetVersion: '1'
       Parameters:
         AutomationAssumeRole:
-          StaticValue: !GetAtt RemediationRole.Arn
-        GroupId:
-          ResourceValue: RESOURCE_ID
-        IpProtocol:
-          StaticValue: tcp
-        FromPort:
-          StaticValue: '22'
+          StaticValue:
+            Values:
+              - !GetAtt RemediationRole.Arn
+        SecurityGroupId:
+          ResourceValue:
+            Value: RESOURCE_ID
       Automatic: true
+      MaximumAutomaticAttempts: 3
+      RetryAttemptSeconds: 60
 
   RemediationRole:
     Type: AWS::IAM::Role
